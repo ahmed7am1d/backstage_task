@@ -126,60 +126,6 @@ const handleFormSubmit = async () => {
 };
 // #endregion
 
-// #region Handle uploading images
-function handleFileChange(event: Event) {
-  selectedProductImage.value =
-    (event.target as HTMLInputElement).files?.[0] || null;
-
-  const fileReader = new FileReader();
-  fileReader.addEventListener("load", () => {
-    selectedImageUrl.value = fileReader.result;
-    console.log(selectedImageUrl.value);
-  });
-
-  fileReader.readAsDataURL(
-    (event.target as HTMLInputElement).files?.[0] as Blob
-  );
-  const fileName = selectedProductImage.value?.name;
-  selectedImageName.value = fileName
-    .split("\\")
-    .pop()
-    .replace(/\.[^/.]+$/, "");
-
-  console.log(selectedImageName.value);
-  console.log(selectedProductImage.value);
-}
-
-const uploadImage = async () => {
-  try {
-    //Handle if no file is selected
-    if (!selectedProductImage.value) {
-      toast.add({
-        title: "Failed to upload image!",
-        description: "No image were selected.",
-        timeout: 2000,
-        color: "red",
-      });
-      return;
-    }
-    //Handle if image is bigger than 1 MB
-    if (selectedProductImage.value.size > 1000000) {
-      toast.add({
-        title: "Failed, Image size is too big!",
-        description: "Upload Image with max of 1MB.",
-        timeout: 2000,
-        color: "red",
-      });
-      return;
-    }
-
-    //Make the api call to upload the image
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-// #endregion
 </script>
 
 <template>
@@ -311,20 +257,7 @@ const uploadImage = async () => {
         />
       </div>
       <!-- Upload Image -->
-      <!-- <div>
-        <input
-          type="file"
-          @change="handleFileChange"
-          accept="image/png, image/gif, image/jpeg"
-        />
-        <button
-          type="button"
-          @click="uploadImage"
-          class="bg-white text-black p-2"
-        >
-          Upload Image
-        </button>
-      </div> -->
+     
 
       <!-- Form submission -->
       <div class="w-[90%] lg:w-[50%] md:w-[70%] sm:w-[90%] mx-auto">
