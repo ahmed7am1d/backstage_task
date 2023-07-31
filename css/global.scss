@@ -32,3 +32,17 @@ ul > li {
 ol > li {
   @apply list-decimal list-inside;
 }
+
+.pageTitle {
+  width: fit-content;
+    position: relative;
+    &::after {
+      position: absolute;
+      content: "";
+      height: 2px;
+      width: 100%;
+      bottom: -5px;
+      left: 0;
+      background-color: white;
+    }
+}
