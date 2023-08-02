@@ -5,4 +5,5 @@ export default defineAppConfig({
       position: "top-0 right-0",
     },
   },
+
 });

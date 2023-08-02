@@ -12,25 +12,31 @@ const {
 </script>
 
 <template>
-  <div class="productsPageWrapper">
-    <h1 class="pageTitle my-2 relative w-fit">Products</h1>
+  <main class="productsPageWrapper">
+    <div class="mb-10 mt-5 w-full flex flex-col justify-center items-center">
+      <h1 class="text-center">Products</h1>
+      <p class=" productsTitleDivider text-center text-gray-500">
+        All Products of back stage EShop, special features for our products
+      </p>
+    </div>
+    <span class="productsTitleDivider"></span>
     <p v-if="productsPending">Fetching ....</p>
     <p v-else-if="productsError">
       Could not load products: {{ productsError.data }}
     </p>
-    <div class="productsWrapper" v-else>
-      <div class="productWrapper" v-for="product in products">
+    <section class="productsWrapper" v-else>
+      <article class="productWrapper" v-for="product in products">
         <!-- Product's image -->
         <div class="aspect-w-3 aspect-h-2 w-full rounded-t-lg bg-[#DDDDDD]">
           <img
             :src="product.image || undefined"
-            alt="Product Image"
+            :alt="`Product image: ${product.title}`"
             class="object-contain w-full h-full rounded-t-lg"
           />
         </div>
         <div class="productInfoWrapper">
           <!-- Product's title -->
-          <p class="text-xl font-bold">{{ product.title }}</p>
+          <h2 class="text-xl font-bold">{{ product.title }}</h2>
           <!-- Product's description -->
           <p class="text-gray-300">{{ product.description }}</p>
           <!-- Product's Cart and price section -->
@@ -42,15 +48,19 @@ const {
               class="px-4 py-2 bg-gray-300 rounded-md text-black w-fit hover:bg-gray-400 transition-all duration-200"
             >
               <div class="flex flex-row items-center gap-2">
-                <Icon name="ps:30-80" color="black" class="w-[20px] h-[20px] mt-1" />
+                <Icon
+                  name="ps:30-80"
+                  color="black"
+                  class="w-[20px] h-[20px] mt-1"
+                />
                 <span class="w-full h-full text-gray-700">Add to cart</span>
               </div>
             </button>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
+      </article>
+    </section>
+  </main>
 </template>
 
 <style lang="scss" scoped>

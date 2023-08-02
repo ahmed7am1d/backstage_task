@@ -6,14 +6,16 @@ import {
   ProductCreationResponse,
 } from "types/IProductCreation";
 import { POST_PRODUCTS_API_URL } from "../../constants/api/product";
+import { useBase64 } from "@vueuse/core";
 
 const toast = useToast();
 const router = useRouter();
-const config = useRuntimeConfig();
 
+const uploadedProductImageFiles = ref<FileList | null>(null);
 const selectedProductImage = ref<File | null>(null);
-const selectedImageUrl = ref<string | ArrayBuffer | null>("");
-const selectedImageName = ref<string | undefined>("");
+let selectedProductImageBase64 = ref() as Ref<string>;
+
+const showProductImageUrlInput = ref<boolean>(true);
 
 // #region Form validation
 
@@ -70,6 +72,7 @@ const handleFormSubmit = async () => {
     //For purpose of typescript safety
     const productPrice =
       formData.productPrice !== null ? Number(formData.productPrice) : 0;
+
     //Creating Request DTO
     const productCreationRequest: ProductCreationRequest = {
       price: productPrice,
@@ -77,61 +80,108 @@ const handleFormSubmit = async () => {
       title: formData.productTitle,
       image: formData.productImageUrl
         ? formData.productImageUrl
+        : selectedProductImageBase64.value
+        ? selectedProductImageBase64.value
         : "https://placehold.co/600x400/png",
     };
+
     //Make API Call to add product
-    try {
-      const { data, pending, error } = await useFetch<ProductCreationResponse>(
-        POST_PRODUCTS_API_URL,
-        {
-          method: "POST",
-          body: productCreationRequest,
+    await useFetch<ProductCreationResponse>(POST_PRODUCTS_API_URL, {
+      method: "POST",
+      body: productCreationRequest,
+      onResponse({ response }) {
+        if (response?.ok) {
+          toast.add({
+            title: "Success!",
+            description: "Product successfully added",
+            timeout: 3000,
+            color: "green",
+            actions: [
+              {
+                variant: "solid",
+                color: "white",
+                label: "Navigate to products",
+                click: () => {
+                  router.push({ path: "/products" });
+                },
+              },
+            ],
+          });
+
+          //After successful submission clear the fields:
+          formData.productTitle = "";
+          formData.productDescription = "";
+          formData.productPrice = null;
+          formData.productImageUrl = "";
+
+          //Reset Vuelidate validation state
+          v$.value.$reset();
         }
-      );
+      },
+      onResponseError({ response }) {
+        toast.add({
+          title: "Failed to add product!",
+          description: `Server response: ${response.statusText}`,
+          timeout: 4000,
+          color: "red",
+        });
 
-      toast.add({
-        title: "Success!",
-        description: "Product successfully added",
-        timeout: 2000,
-        color: "green",
-        actions: [
-          {
-            variant: "solid",
-            color: "white",
-            label: "Navigate to products",
-            click: () => {
-              router.push({ path: "/products" });
-            },
-          },
-        ],
-      });
-
-      //After successful submission clear the fields:
-      formData.productTitle = "";
-      formData.productDescription = "";
-      formData.productPrice = null;
-      formData.productImageUrl = "";
-
-      //Reset Vuelidate validation state
-      v$.value.$reset();
-    } catch (error) {
-      toast.add({
-        title: "Failed!",
-        description: "Failed to add product.",
-        timeout: 2000,
-        color: "red",
-      });
-    }
+        //After successful submission clear the fields:
+        formData.productTitle = "";
+        formData.productDescription = "";
+        formData.productPrice = null;
+        formData.productImageUrl = "";
+        
+        //Reset Vuelidate validation state
+        v$.value.$reset();
+      },
+    });
   }
 };
 // #endregion
 
+// #region Handle Product's image upload
+
+const handleProductImageChange = async (
+  selectedFiles: FileList | null,
+  isRequestToRemoveImage: boolean
+) => {
+  if (isRequestToRemoveImage) {
+    showProductImageUrlInput.value = true;
+    uploadedProductImageFiles.value = null;
+    selectedProductImage.value = null;
+  } else {
+    if (selectedFiles !== null && selectedFiles.length > 0) {
+      // Hide the input field for image url and clear the field
+      showProductImageUrlInput.value = false;
+      formData.productImageUrl = "";
+
+      // Save the selected image, and selected files (in case in future one product has many pictures)
+      uploadedProductImageFiles.value = selectedFiles;
+      selectedProductImage.value = selectedFiles[0];
+
+      // Transfer the image to base64 and save it to form data
+      const { base64: productImageBase64 } = useBase64(
+        selectedProductImage.value
+      );
+      selectedProductImageBase64 = productImageBase64;
+    } else {
+      uploadedProductImageFiles.value = null;
+      selectedProductImage.value = null;
+    }
+  }
+};
+
+// #endregion
 </script>
 
 <template>
   <div class="addProductPageWrapper">
-    <div class="flex justify-center">
-      <h1>Add products</h1>
+    <div class="mb-10 mt-5 w-full flex flex-col justify-center items-center">
+      <h1 class="text-center">Add Products</h1>
+      <p class=" productsTitleDivider text-center text-gray-500">
+        Add your products to the EShop, upload an image or put an online url of an image.
+      </p>
     </div>
     <form
       @submit.prevent="handleFormSubmit"
@@ -245,7 +295,7 @@ const handleFormSubmit = async () => {
       </div>
 
       <!-- Product's Image Url -->
-      <div class="productTextOrNumberIG">
+      <div class="productTextOrNumberIG" v-if="showProductImageUrlInput">
         <label>Product image url</label>
         <input
           v-model="formData.productImageUrl"
@@ -256,8 +306,14 @@ const handleFormSubmit = async () => {
           placeholder="Image url.."
         />
       </div>
+
       <!-- Upload Image -->
-     
+      <div class="productTextOrNumberIG">
+        <FileInput
+          v-model="uploadedProductImageFiles"
+          @update:modelValue="handleProductImageChange"
+        />
+      </div>
 
       <!-- Form submission -->
       <div class="w-[90%] lg:w-[50%] md:w-[70%] sm:w-[90%] mx-auto">
