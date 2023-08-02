@@ -12,7 +12,7 @@
   "devDependencies": {
     "@nuxt/content": "^2.7.0",
     "@nuxt/devtools": "latest",
-    "@nuxthq/ui": "^2.4.1",
+    "@nuxthq/ui": "^2.6.0",
     "@nuxtjs/tailwindcss": "^6.8.0",
     "@types/node": "^18",
     "@vueuse/core": "^10.2.0",
@@ -24,6 +24,7 @@
     "@prisma/client": "4.16.1",
     "@vuelidate/core": "^2.0.2",
     "@vuelidate/validators": "^2.0.2",
+    "nuxt-icon": "^0.4.2",
     "prisma": "^4.16.1"
   }
 }
